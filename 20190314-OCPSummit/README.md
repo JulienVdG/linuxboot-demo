@@ -11,7 +11,7 @@ Material:
  - An OCP winterfell server
  - A Raspberry-pi to act as a server (for dhcp, tftp and apt proxy or apt mirror)
 
-Connexions:
+Connections:
  - The RJ-45 of the winterfell is connected to the one of the Raspberry-pi
  - The debug port of winterfell is connected to the Raspberry-pi with a usb-serial adaptor
 
@@ -43,7 +43,7 @@ cp ../deploy/my-pi.ini inventory.ini
 
 ### Setup for serving without internet access
 
-Once the winterfell has been installed once, `apt-cacher-ng` will have cached the necessary files, you can setup a web server to act as a mirror:
+Once the winterfell image has been installed once, `apt-cacher-ng` will have cached the necessary files and you can setup a web server to act as a mirror:
 * deploy the apt mirror configuration on the server (02-deploy.sh ../deploy/setup-localmirror.yml)
   ``` shell
   ../scripts/02-deploy.sh ../deploy/setup-localmirror.yml
@@ -58,7 +58,7 @@ Once the winterfell has been installed once, `apt-cacher-ng` will have cached th
 
 ## Running the demo
 
-On the installed Raspberry-pi you will have a [Linuxboot-Demo.txt](deploy/files/Linuxboot-Demo.txt) on the desktop that you can follow during the event.
+On the installed Raspberry-pi you will have a [Linuxboot-Demo.txt](deploy/files/Linuxboot-Demo.txt) on the desktop that you can display during the event.
 The icon for `Putty` and `Wireshark` are also installed on the desktop for quick access.
 
 ## Side note

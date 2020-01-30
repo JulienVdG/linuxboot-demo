@@ -1,0 +1,34 @@
+---
+
+- name: Install golang
+  hosts: worker
+  become: true
+  tasks:
+  - get_url:
+      url: '{{ golang_base_url }}{{ golang_archive }}'
+      dest: '/tmp/{{ golang_archive }}'
+  - unarchive:
+      src: '/tmp/{{ golang_archive }}'
+      dest: /usr/local
+      remote_src: yes
+
+- name: Setup golang user environment
+  hosts: worker
+  become: false
+  tasks:
+  - name: Creates directory
+    file:
+      path: 'go'
+      state: directory
+  - name: Create goenv
+    copy:
+      dest: 'go/goenv'
+      content: |
+        export GOROOT=/usr/local/go
+        export GOPATH=$HOME/go
+        export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+  - name: Enable goenv
+    lineinfile:
+      dest: .bashrc
+      line: '. ~/go/goenv'
+

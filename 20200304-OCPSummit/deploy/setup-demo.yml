@@ -1,5 +1,21 @@
 ---
 
+- name: Install packages
+  hosts: worker
+  become: true
+  tasks:
+  - apt:
+      pkg:
+        - git
+        - git-gui
+        - gitk
+        - vim-gtk
+        - vbindiff
+        - ipmitool
+      update_cache: yes
+      cache_valid_time: 3600
+  tags: apt
+
 - name: Install golang
   hosts: worker
   become: true
@@ -11,6 +27,7 @@
       src: '/tmp/{{ golang_archive }}'
       dest: /usr/local
       remote_src: yes
+  tags: go
 
 - name: Setup golang user environment
   hosts: worker
@@ -31,4 +48,19 @@
     lineinfile:
       dest: .bashrc
       line: '. ~/go/goenv'
+  tags: go
 
+- name: Setup code
+  hosts: worker
+  become: false
+  tasks:
+  - name: Creates directory
+    file:
+      path: 'demo'
+      state: directory
+  - git:
+      repo: '{{ githuburl }}JulienVdG/tastevin.git'
+      dest: 'demo/tastevin'
+      version: master
+      accept_hostkey: yes
+  tags: demo

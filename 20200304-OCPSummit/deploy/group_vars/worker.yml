@@ -2,3 +2,8 @@
 
 golang_archive: go1.12.16.linux-amd64.tar.gz
 golang_base_url: https://dl.google.com/go/
+
+my_dev: false
+
+githuburl: "{{ (my_dev)|ternary('git@github.com:','https://github.com/') }}"
+

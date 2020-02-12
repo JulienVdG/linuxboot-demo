@@ -12,6 +12,10 @@
         - vim-gtk
         - vbindiff
         - ipmitool
+        - build-essential
+        - bc
+        - meld
+        - screen
       update_cache: yes
       cache_valid_time: 3600
   tags: apt
@@ -50,24 +54,96 @@
       line: '. ~/go/goenv'
   tags: go
 
+- name: User Setup
+  hosts: worker
+  become: true
+  tasks:
+  - name: adding existing user '{{ ansible_user }}' to group dialout
+    user:
+      name: '{{ ansible_user }}'
+      groups: dialout
+      append: yes
+  tags: user
+
 - name: Setup code
+  hosts: worker
+  become: false
+  tasks:
+  - name: Creates directories
+    file:
+      path: '{{ item }}'
+      state: directory
+    with_items:
+    - 'demo'
+    - 'demo/bin'
+    - 'demo/patches/linux'
+    - 'demo/blobs'
+  - name: Install tastevin
+    git:
+      repo: '{{ githuburl }}JulienVdG/tastevin.git'
+      dest: 'demo/tastevin'
+      version: yafu
+      accept_hostkey: yes
+  - name: Install Yafuflash
+    copy:
+      src: '../blobs/Yafuflash_Quanta_Leopard'
+      dest: 'demo/bin'
+      mode: 'u=rx,g=rx,o=rx'
+  - name: Install linux src
+    git:
+      repo: 'https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/'
+      dest: 'demo/linux'
+      version: v4.14.170
+      depth: 1
+      accept_hostkey: yes
+  - name: Install linux patches
+    copy:
+      src: '../patches/linux/{{ item }}'
+      dest: 'demo/patches/linux'
+    with_items:
+    - '0001-0000-efi_bds.patch.patch'
+    - '0002-0010-winterfell-ahci.patch.patch'
+  - name: Install u-root
+    shell:
+      cmd: '. ~/go/goenv;go get github.com/u-root/u-root'
+  - name: Copy rom image
+    copy:
+      src: '../blobs/UEFI_Quanta_Leopard_v2.rom'
+      dest: 'demo/blobs'
+  - name: Install linuxboot build scripts
+    git:
+      repo: '{{ githuburl }}JulienVdG/linuxboot.git'
+      dest: 'demo/linuxboot'
+      version: 20200304-OCPSummit
+  - name: Install ocp server image scritps
+    git:
+      repo: 'git@dev.splitted-desktop.com:jvdg/winterfell-dev-build.git'
+      dest: 'demo/leopard-v2q'
+      version: leopard-v2q
+      accept_hostkey: yes
+    when: my_dev
+  tags: demo
+
+- name: Setup additional stuff for dev
   hosts: worker
   become: false
   tasks:
   - name: Creates directory
     file:
-      path: 'demo'
+      path: '.vim/pack/plugins/start'
       state: directory
+    when: my_dev
   - git:
-      repo: '{{ githuburl }}JulienVdG/tastevin.git'
-      dest: 'demo/tastevin'
+      repo: 'https://github.com/fatih/vim-go.git'
+      dest: '~/.vim/pack/plugins/start/vim-go'
       version: master
       accept_hostkey: yes
-  - file:
-      path: 'demo/bin'
-      state: directory
+    when: my_dev
   - copy:
-      src: '../blobs/Yafuflash_Quanta_Leopard'
-      dest: 'demo/bin'
-      mode: 'u=rx,g=rx,o=rx'
-  tags: demo
+      src: '~/.gitconfig'
+      dest: '.gitconfig'
+  - template:
+      src: templates/bash_aliases.j2
+      dest: .bash_aliases
+  tags: [demo,dev]
+

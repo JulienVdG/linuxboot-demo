@@ -1,0 +1,58 @@
+From 9c653b6a1b5455d65bfe6c1f1173be40603aeca2 Mon Sep 17 00:00:00 2001
+From: Julien Viard de Galbert <julien.viard-de-galbert@itrenew.com>
+Date: Fri, 24 May 2019 15:06:35 +0200
+Subject: [PATCH 1/2] 0000-efi_bds.patch
+
+---
+ arch/x86/boot/compressed/eboot.c | 21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/boot/compressed/eboot.c b/arch/x86/boot/compressed/eboot.c
+index 97c57b5f8d57..5b86719f8462 100644
+--- a/arch/x86/boot/compressed/eboot.c
++++ b/arch/x86/boot/compressed/eboot.c
+@@ -630,8 +630,8 @@ struct boot_params *make_boot_params(struct efi_config *c)
+ 	u16 *s2;
+ 	u8 *s1;
+ 	int i;
+-	unsigned long ramdisk_addr;
+-	unsigned long ramdisk_size;
++	unsigned long ramdisk_addr = 0;
++	unsigned long ramdisk_size = 0;
+ 
+ 	efi_early = c;
+ 	sys_table = (efi_system_table_t *)(unsigned long)efi_early->table;
+@@ -686,9 +686,6 @@ struct boot_params *make_boot_params(struct efi_config *c)
+ 	/* Fill in upper bits of command line address, NOP on 32 bit  */
+ 	boot_params->ext_cmd_line_ptr = (u64)(unsigned long)cmdline_ptr >> 32;
+ 
+-	hdr->ramdisk_image = 0;
+-	hdr->ramdisk_size = 0;
+-
+ 	/* Clear APM BIOS info */
+ 	memset(bi, 0, sizeof(*bi));
+ 
+@@ -712,10 +709,16 @@ struct boot_params *make_boot_params(struct efi_config *c)
+ 
+ 	if (status != EFI_SUCCESS)
+ 		goto fail2;
+-	hdr->ramdisk_image = ramdisk_addr & 0xffffffff;
+-	hdr->ramdisk_size  = ramdisk_size & 0xffffffff;
+-	boot_params->ext_ramdisk_image = (u64)ramdisk_addr >> 32;
+-	boot_params->ext_ramdisk_size  = (u64)ramdisk_size >> 32;
++
++	// don't overwrite the bzImage or loader provided ramdisk pointer
++	// unless the kernel command line specified a different one.
++	if (ramdisk_addr != 0)
++	{
++		hdr->ramdisk_image = ramdisk_addr & 0xffffffff;
++		hdr->ramdisk_size  = ramdisk_size & 0xffffffff;
++		boot_params->ext_ramdisk_image = (u64)ramdisk_addr >> 32;
++		boot_params->ext_ramdisk_size  = (u64)ramdisk_size >> 32;
++	}
+ 
+ 	return boot_params;
+ fail2:
+-- 
+2.11.0
+

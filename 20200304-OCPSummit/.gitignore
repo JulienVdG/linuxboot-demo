@@ -1,0 +1,4 @@
+build/
+blobs/*
+!blobs/README.md
+deploy/*.retry

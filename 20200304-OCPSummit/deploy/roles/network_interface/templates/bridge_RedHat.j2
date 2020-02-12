@@ -1,0 +1,24 @@
+#jinja2: lstrip_blocks: "True", trim_blocks: "True"
+NAME={{ item.name | default(item.device) }}
+DEVICE={{ item.device }}
+TYPE=Bridge
+{% if item.bootproto is defined and item.bootproto == 'dhcp' %}
+BOOTPROTO=dhcp
+{% else %}
+BOOTPROTO={{ item.bootproto|default("none") }}
+    {% if item.address is defined %}
+IPADDR={{ item.address }}
+    {% endif -%}
+
+    {% if item.netmask is defined %}
+NETMASK={{ item.netmask }}
+    {% endif -%}
+
+    {% if item.gateway is defined %}
+GATEWAY={{ item.gateway }}
+    {% endif -%}
+{% endif -%}
+
+{% include "RedHat_ipv6_options.j2" -%}
+
+{% include "RedHat_generic_options.j2" %}

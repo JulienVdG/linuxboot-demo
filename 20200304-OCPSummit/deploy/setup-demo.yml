@@ -14,8 +14,13 @@
         - ipmitool
         - build-essential
         - bc
+        - libncurses5-dev
+        - uuid-dev
+        - nasm
+        - acpica-tools
         - meld
         - screen
+        - chromium-browser
       update_cache: yes
       cache_valid_time: 3600
   tags: apt
@@ -82,7 +87,7 @@
     git:
       repo: '{{ githuburl }}JulienVdG/tastevin.git'
       dest: 'demo/tastevin'
-      version: yafu
+      version: 20200304-OCPSummit
       accept_hostkey: yes
   - name: Install Yafuflash
     copy:
@@ -103,6 +108,12 @@
     with_items:
     - '0001-0000-efi_bds.patch.patch'
     - '0002-0010-winterfell-ahci.patch.patch'
+  - name: Install u-root src
+    git:
+      repo: '{{ githuburl }}JulienVdG/u-root.git'
+      dest: 'go/src/github.com/u-root/u-root'
+      version: 20200304-OCPSummit
+      accept_hostkey: yes
   - name: Install u-root
     shell:
       cmd: '. ~/go/goenv;go get github.com/u-root/u-root'

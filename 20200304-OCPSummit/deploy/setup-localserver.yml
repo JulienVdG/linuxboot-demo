@@ -28,6 +28,7 @@
           broadcast: 192.168.10.255
           options:
             - "vlan-raw-device: {{ my_net_nic }}"
+            - "post-up systemctl restart dnsmasq.service"
 
 - name: configure dnsmasq and tftp
   hosts: worker
